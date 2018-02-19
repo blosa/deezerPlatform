@@ -1,0 +1,20 @@
+CREATE DATABASE deezer;
+
+CREATE TABLE user (
+	user_id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	user_name varchar(255),
+	user_email varchar(255)
+);
+
+CREATE TABLE song (
+	song_id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	song_name varchar(255),
+	song_duration SMALLINT UNSIGNED
+);
+
+CREATE TABLE user_song (
+	user_id INT UNSIGNED NOT NULL,
+	song_id INT UNSIGNED NOT NULL,
+	CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT fk_song_id FOREIGN KEY (song_id) REFERENCES song(song_id) ON DELETE CASCADE ON UPDATE CASCADE
+)ENGINE=InnoDB;
