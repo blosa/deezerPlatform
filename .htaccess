@@ -1,2 +1,2 @@
-RewriteEngine On
-RewriteRule ^(.*)/(.*)?(.*)$ index.php?class=$1&method=$2&$3
+# RewriteEngine On
+# RewriteRule ^([^/]*)/([^/]*)/?(.*)$ index.php?class=$1&method=$2&$3
