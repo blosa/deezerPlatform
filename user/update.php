@@ -12,10 +12,10 @@ include_once '../objects/user.php';
  
 // get database connection
 $database = new Database();
-$db = $database->getConnection();
+//$db = $database->getConnection();
  
 // prepare user object
-$user = new user($db);
+$user = new user($database);
  
 // get id of user to be edited
 $data = json_decode(file_get_contents("php://input"));
