@@ -63,7 +63,7 @@ class user {
 	     
 	}
 
-	// used when filling up the update product form
+	// used when filling up the update user form
 	function readOne($data = null){
 	 
 	 	/*
@@ -84,7 +84,7 @@ class user {
 	    // prepare query statement
 	    $stmt = $this->conn->prepare( $query );
 	 
-	    // bind user_identifiant of product to be updated
+	    // bind user_identifiant of user to be updated
 	    $stmt->bindParam(1, $this->user_identifiant);
 	 
 	    // execute query
@@ -98,36 +98,30 @@ class user {
 	 	}
 	}
 
-	// update the product
+	// update the user
 	function update(){
 	 
 	    // update query
 	    $query = "UPDATE
 	                " . $this->table_name . "
 	            SET
-	                name = :name,
-	                price = :price,
-	                description = :description,
-	                category_id = :category_id
+	                user_name = :user_name,
+	                user_email = :user_email
 	            WHERE
-	                id = :id";
+	                user_identifiant = :user_identifiant";
 	 
 	    // prepare query statement
 	    $stmt = $this->conn->prepare($query);
 	 
 	    // sanitize
-	    $this->name=htmlspecialchars(strip_tags($this->name));
-	    $this->price=htmlspecialchars(strip_tags($this->price));
-	    $this->description=htmlspecialchars(strip_tags($this->description));
-	    $this->category_id=htmlspecialchars(strip_tags($this->category_id));
-	    $this->id=htmlspecialchars(strip_tags($this->id));
+	    $this->user_name=htmlspecialchars(strip_tags($this->user_name));
+	    $this->user_email=htmlspecialchars(strip_tags($this->user_email));
+	    $this->user_identifiant=htmlspecialchars(strip_tags($this->user_identifiant));
 	 
 	    // bind new values
-	    $stmt->bindParam(':name', $this->name);
-	    $stmt->bindParam(':price', $this->price);
-	    $stmt->bindParam(':description', $this->description);
-	    $stmt->bindParam(':category_id', $this->category_id);
-	    $stmt->bindParam(':id', $this->id);
+	    $stmt->bindParam(':user_name', $this->name);
+	    $stmt->bindParam(':user_email', $this->price);
+	    $stmt->bindParam(':user_identifiant', $this->description);
 	 
 	    // execute the query
 	    if($stmt->execute()){
@@ -135,5 +129,29 @@ class user {
 	    }
 	 
 	    return false;
+	}
+
+	// delete the product
+	function delete(){
+	 
+	    // delete query
+	    $query = "DELETE FROM " . $this->table_name . " WHERE user_identifiant = ?";
+	 
+	    // prepare query
+	    $stmt = $this->conn->prepare($query);
+	 
+	    // sanitize
+	    $this->user_identifiant=htmlspecialchars(strip_tags($this->user_identifiant));
+	 
+	    // bind id of record to delete
+	    $stmt->bindParam(1, $this->user_identifiant);
+	 
+	    // execute query
+	    if($stmt->execute()){
+	        return true;
+	    }
+	 
+	    return false;
+	     
 	}
 }
