@@ -18,13 +18,13 @@ $db = $database->getConnection();
 $user = new user($db);
  
 // get posted data
-$data = json_decode(file_get_contents("php://input"));
+//$data = json_decode(file_get_contents("php://input"));
  
 // set user property values
-$user->user_name = $data->user_name;
-$user->user_email = $data->user_email;
-$user->user_identifiant = $data->user_identifiant;
- 
+$user->user_name = $_POST['user_name'];
+$user->user_email = $_POST['user_email']l;
+$user->user_identifiant = $_POST['user_identifiant'];
+
 // create the user
 if($user->create()){
     echo '{';

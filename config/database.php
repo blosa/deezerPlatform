@@ -22,4 +22,33 @@ class Database{
  
         return $this->conn;
     }
+
+//htmlspecialchars(strip_tags($this->user_name))
+    public static function where($aWhere, $sCond = 'AND')
+    {
+        $sWhere = '';
+        foreach ($aWhere as $sField => $aData) {
+            if (!empty($sWhere) {
+                $sWhere .= ' '.$sCond.' ';
+            }
+
+            if (is_numeric($sField)) {
+                $sWhere .= $aData;
+                continue;
+            }
+
+            if (!is_array($aData)) {
+                $sData = htmlspecialchars(strip_tags($aData)); // or mysqli escape string
+            } else {
+                $aEscapedData = array();
+                foreach ($aData as $sFieldData) {
+                    $aEscapedData[] = htmlspecialchars(strip_tags($sFieldData));
+                }
+                $sData = implode('\',\'', $aEscapedData);
+            }
+
+            $sWhere .= $sField.' in (\''.$sData.'\')';
+        }
+        return $sWhere; //  arg1 in ('value1', 'value2'...) AND ...
+    }
 }

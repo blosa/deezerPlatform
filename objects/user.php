@@ -64,7 +64,7 @@ class user {
 	}
 
 	// used when filling up the update user form
-	function readOne($data = null){
+	function readOne($data = array()){
 	 
 	 	/*
 	 	foreach($data as $field => $value) {

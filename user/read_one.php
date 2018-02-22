@@ -24,7 +24,7 @@ $user->readOne();
  
 // create array
 $user_arr = array(
-    "id" =>  $user->user_id,
+    "user_id" =>  $user->user_id,
     "user_name" => $user->user_name,
     "user_email" => $user->user_email,
     "user_identifiant" => $user->user_identifiant
