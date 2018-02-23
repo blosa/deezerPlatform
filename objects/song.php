@@ -63,7 +63,7 @@ class song {
         $num = $stmt->rowCount();
         
         if($num != 1) {
-            throw new Exception("Invalid number of user found : $num");
+            throw new Exception("Invalid number of song found : $num");
         }
 
         // get retrieved row

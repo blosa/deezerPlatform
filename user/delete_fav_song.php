@@ -10,20 +10,41 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 include_once '../config/database.php';
 include_once '../objects/user.php';
 include_once '../objects/song.php';
- 
-$database = new Database();
- 
-$user = new user($database);
 
-// set user property values
-$user->user_id = $_GET['user_id'];
-$song_id = $_GET['song_id'];
+try{
+	// get database connection
+	$database = new Database();
+	 
+	// prepare user object
+	$user = new user($database);
+	// set ID property of user to be edited
+	if(!isset($_GET['user_id'])) {
+		throw new Exception('Missing user_id argument');
+	}
+	$user->user_id = $_GET['user_id'];
+	 
+	if(!isset($_GET['song_id'])) {
+		throw new Exception('Missing song_id argument');
+	}
+	$song_id = $_GET['song_id'];
 
-// delete
-if($user->delFavSong($song_id)){
-	echo json_encode(array("message" => 'Song #' . $song_id . ' deleted for user #' . $user->user_id));
+	// add song
+	if($user->delFavSong($song_id)){
+		$result = array(
+			"message" => 'Song #' . $song_id . ' deleted to user #' . $user->user_id
+		);
+	}
+	// if unable to create the user, tell the user
+	else{
+		$result = array(
+			"message" => 'Unable to delete song #' . $song_id . ' to user #' . $user->user_id
+		);
+	}
+} catch(Exception $e) {
+	$result = array(
+		"Error" => $e->getMessage()
+	);
 }
-// if unable to create the user, tell the user
-else{
-	echo json_encode(array("message" => 'Unable to delete song #' . $song_id . ' to user #' . $user->user_id));
-}
+ 
+// make it json format
+print_r(json_encode($result));

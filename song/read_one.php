@@ -1,5 +1,5 @@
 <?php
-// use POST URL/song/read_one.php?song_id=$song_id
+// use GET URL/song/read_one.php?song_id=$song_id
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: access");
 header("Access-Control-Allow-Methods: GET");
