@@ -3,8 +3,8 @@ class song {
 	
     CONST TABLE = "song";
 
-    // database connection and table name
-    private $conn;
+    // database connection
+    private $db;
  
     // object properties
     public $song_id;
@@ -13,7 +13,7 @@ class song {
  
     // constructor with $db as database connection
     public function __construct($db, $data = array()){
-        $this->conn = $db->conn;
+        $this->db = $db;
         $this->table_columns = $db->show_columns(self::TABLE);
 
         foreach(array_keys($this->table_columns) as $column){
@@ -30,7 +30,7 @@ class song {
                     " . self::TABLE;
      
         // prepare query statement
-        $stmt = $this->conn->prepare($query);
+        $stmt = $this->db->conn->prepare($query);
      
         // execute query
         $stmt->execute();
@@ -52,7 +52,7 @@ class song {
                     0,1";
      
         // prepare query statement
-        $stmt = $this->conn->prepare( $query );
+        $stmt = $this->db->conn->prepare( $query );
      
         // bind user_identifiant of user to be updated
         $stmt->bindParam(1, $this->song_id);
@@ -60,11 +60,17 @@ class song {
         // execute query
         $stmt->execute();
      
+        $num = $stmt->rowCount();
+        
+        if($num != 1) {
+            throw new Exception("Invalid number of user found : $num");
+        }
+
         // get retrieved row
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
         foreach($row as $field => $data) {
             $this->{$field} = $data;
-        }
+        }   
     }
 }

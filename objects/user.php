@@ -3,19 +3,19 @@ class user {
 	
     const TABLE = "user";
     const TABLE_SONG = "user_song";
-    // database connection and table name
-    private $conn;
+
+    // database connection
+    private $db;
     private $table_columns;
  
     // object properties
     public $user_id;
     public $user_name;
     public $user_email;
-    public $user_identifiant;
 
     // constructor with $db as database connection
     public function __construct($db, $data = array()){
-        $this->conn = $db->conn;
+        $this->db = $db;
         $this->table_columns = $db->show_columns(self::TABLE);
 
         foreach(array_keys($this->table_columns) as $column){
@@ -32,7 +32,7 @@ class user {
 	                " . self::TABLE;
 	 
 	    // prepare query statement
-	    $stmt = $this->conn->prepare($query);
+	    $stmt = $this->db->conn->prepare($query);
 	 
 	    // execute query
 	    $stmt->execute();
@@ -40,132 +40,50 @@ class user {
 	    return $stmt;
 	}
 
-	// create user
-	function create(){
-	 
-	    // query to insert record
-	    $query = "INSERT INTO
-	                " . self::TABLE . "
-	            SET
-	                user_name=:user_name, user_email=:user_email, user_identifiant=:user_identifiant";
-	 
-	    // prepare query
-	    $stmt = $this->conn->prepare($query);
-	 
-	    // sanitize
-	    $this->user_name=htmlspecialchars(strip_tags($this->user_name));
-	    $this->user_email=htmlspecialchars(strip_tags($this->user_email));
-	    $this->user_identifiant=htmlspecialchars(strip_tags($this->user_identifiant));
-	    // bind values
-	    $stmt->bindParam(":user_name", $this->user_name);
-	    $stmt->bindParam(":user_email", $this->user_email);
-	    $stmt->bindParam(":user_identifiant", $this->user_identifiant);
-
-	    // execute query
-	    if($stmt->execute()){
-	        return true;
-	    }
-	 
-	    return false;
-	     
-	}
-
 	// used when filling up the update user form
-	function readOne($data = array()){
-	 
-	 	/*
-	 	foreach($data as $field => $value) {
-		 	$where =
-	 	}
-	 	*/
+	function readOne(){
 	    // query to read single record
 	    $query = "SELECT
 	               *
 	            FROM
 	                " . self::TABLE . "
 	            WHERE
-	                user_identifiant = ?
+	                user_id = ?
 	            LIMIT
 	                0,1";
 	 
 	    // prepare query statement
-	    $stmt = $this->conn->prepare( $query );
+	    $stmt = $this->db->conn->prepare( $query );
 	 
-	    // bind user_identifiant of user to be updated
-	    $stmt->bindParam(1, $this->user_identifiant);
+	    // bind user_id of user to be updated
+	    $stmt->bindParam(1, $this->user_id);
 	 
 	    // execute query
 	    $stmt->execute();
-	 
+		$num = $stmt->rowCount();
+	 	
+	 	if($num != 1) {
+	 		throw new Exception("Invalid number of user found : $num");
+	 	}
 	    // get retrieved row
 	    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 	    
 	 	foreach($row as $field => $data) {
 	 		$this->{$field} = $data;
-	 	}
-	}
-
-	// update the user
-	function update(){
-	 
-	    // update query
-	    $query = "UPDATE
-	                " . self::TABLE . "
-	            SET
-	                user_name = :user_name,
-	                user_email = :user_email
-	            WHERE
-	                user_identifiant = :user_identifiant";
-	 
-	    // prepare query statement
-	    $stmt = $this->conn->prepare($query);
-	 
-	    // sanitize
-	    $this->user_name=htmlspecialchars(strip_tags($this->user_name));
-	    $this->user_email=htmlspecialchars(strip_tags($this->user_email));
-	    $this->user_identifiant=htmlspecialchars(strip_tags($this->user_identifiant));
-	 
-	    // bind new values
-	    $stmt->bindParam(':user_name', $this->user_name);
-	    $stmt->bindParam(':user_email', $this->user_email);
-	    $stmt->bindParam(':user_identifiant', $this->user_identifiant);
-	 
-	    // execute the query
-	    if($stmt->execute()){
-	        return true;
-	    }
-	 
-	    return false;
-	}
-
-	// delete the product
-	function delete(){
-	 
-	    // delete query
-	    $query = "DELETE FROM " . self::TABLE . " WHERE user_identifiant = ?";
-	 
-	    // prepare query
-	    $stmt = $this->conn->prepare($query);
-	 
-	    // sanitize
-	    $this->user_identifiant=htmlspecialchars(strip_tags($this->user_identifiant));
-	 
-	    // bind id of record to delete
-	    $stmt->bindParam(1, $this->user_identifiant);
-	 
-	    // execute query
-	    if($stmt->execute()){
-	        return true;
-	    }
-	 
-	    return false;
-	     
+	 	}	
 	}
 
 	public function readFavSong(){
-		$query = "SELECT * FROM " . self::TABLE_SONG . " INNER JOIN " . song::TABLE . " using (song_id) WHERE user_id = ?";
+		//check if user is real
+		$user = new user($this->db, array('user_id' => $this->user_id));
+		$user->readOne();
+		if($user->user_id != $this->user_id) {
+			throw new Exception("Incorrect user.");
+		}
+
+		$query = "SELECT " . song::TABLE . ".* FROM " . self::TABLE_SONG . " INNER JOIN " . song::TABLE . " using (song_id) WHERE user_id = ?";
 	    // prepare query
-	    $stmt = $this->conn->prepare($query);
+	    $stmt = $this->db->conn->prepare($query);
 	 
 	    // sanitize
 	    $this->user_id=htmlspecialchars(strip_tags($this->user_id));
@@ -191,6 +109,21 @@ class user {
 	}
 
 	public function addFavSong($song_id){
+
+		//check if user is real
+		$user = new user($this->db, array('user_id' => $this->user_id));
+		$user->readOne();
+		if($user->user_id != $this->user_id) {
+			throw new Exception("Incorrect user.");
+		}
+
+		//check if song is real
+		$song = new song($this->db, array('song_id' => $song_id));
+		$song->readOne();
+		if($song->song_id != $song_id) {
+			throw new Exception("Incorrect song.");
+		}
+
 	    // sanitize
 	    $this->user_id=htmlspecialchars(strip_tags($this->user_id));
 	    $song_id=htmlspecialchars(strip_tags($song_id));
@@ -204,7 +137,7 @@ class user {
 		$query = "INSERT INTO " . self::TABLE_SONG . " VALUES (:user_id, :song_id)";
 
 	    // prepare query
-	    $stmt = $this->conn->prepare($query);
+	    $stmt = $this->db->conn->prepare($query);
 	 
 	    // bind values
 	    $stmt->bindParam(":user_id", $this->user_id);
@@ -220,6 +153,20 @@ class user {
 
 	public function delFavSong($song_id){
 
+		//check if user is real
+		$user = new user($this->db, array('user_id' => $this->user_id));
+		$user->readOne();
+		if($user->user_id != $this->user_id) {
+			throw new Exception("Incorrect user.");
+		}
+
+		//check if song is real
+		$song = new song($this->db, array('song_id' => $song_id));
+		$song->readOne();
+		if($song->song_id != $song_id) {
+			throw new Exception("Incorrect song.");
+		}
+
 	    // sanitize
 	    $this->user_id=htmlspecialchars(strip_tags($this->user_id));
 	    $song_id=htmlspecialchars(strip_tags($song_id));
@@ -233,7 +180,7 @@ class user {
 		$query = "DELETE FROM " . self::TABLE_SONG . " WHERE user_id=:user_id AND song_id=:song_id";
 
 	    // prepare query
-	    $stmt = $this->conn->prepare($query);
+	    $stmt = $this->db->conn->prepare($query);
 	 
 	    // bind values
 	    $stmt->bindParam(":user_id", $this->user_id);
@@ -256,7 +203,7 @@ class user {
 		$query_select = "SELECT * FROM " . self::TABLE_SONG . " WHERE user_id=:user_id and song_id=:song_id";
 
 	    // prepare query
-	    $select = $this->conn->prepare($query_select);
+	    $select = $this->db->conn->prepare($query_select);
 	 
 	    // bind values
 	    $select->bindParam(":user_id", $this->user_id);
